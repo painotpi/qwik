@@ -13,11 +13,13 @@ import {
   statSync,
   unlinkSync,
   writeFile as fsWriteFile,
+  mkdir as fsMkdir,
 } from 'fs';
 import { promisify } from 'util';
 import gzipSize from 'gzip-size';
 import { minify, MinifyOptions } from 'terser';
 import type { Plugin as RollupPlugin } from 'rollup';
+import { promises } from 'dns';
 
 /**
  * Contains information about the build we're generating by parsing
@@ -36,6 +38,8 @@ export interface BuildConfig {
   esmNode: boolean;
   distVersion: string;
   platformTarget?: string;
+  bazelOutputDir?: string;
+  qwikBindingMap?: string;
 
   api?: boolean;
   build?: boolean;
@@ -59,13 +63,14 @@ export interface BuildConfig {
  */
 export function loadConfig(args: string[] = []) {
   const config: BuildConfig = mri(args) as any;
+  config.bazelOutputDir = config.bazelOutputDir && join(process.cwd(), config.bazelOutputDir);
 
   config.rootDir = join(__dirname, '..');
-  config.distDir = join(config.rootDir, 'dist-dev');
+  config.distDir = join(config.bazelOutputDir || config.rootDir, 'dist-dev');
   config.srcDir = join(config.rootDir, 'src');
   config.srcNapiDir = join(config.srcDir, 'napi');
   config.scriptsDir = join(config.rootDir, 'scripts');
-  config.distPkgDir = join(config.distDir, '@builder.io-qwik');
+  config.distPkgDir = config.bazelOutputDir ? join(join(config.bazelOutputDir, 'package')) : join(config.distDir, '@builder.io-qwik');
   config.distBindingsDir = join(config.distPkgDir, 'bindings');
   config.tscDir = join(config.distDir, 'tsc-out');
   config.esmNode = parseInt(process.version.substr(1).split('.')[0], 10) >= 14;
@@ -74,6 +79,7 @@ export function loadConfig(args: string[] = []) {
   config.setVersion = (config as any)['set-version'];
   config.setDistTag = (config as any)['set-dist-tag'];
   config.dryRun = (config as any)['dry-run'];
+  config.qwikBindingMap = join(config.bazelOutputDir || config.srcDir, 'optimizer', 'src', 'qwik-binding-map.ts');
 
   return config;
 }
@@ -211,6 +217,7 @@ export const copyFile = promisify(fsCopyFile);
 export const readFile = promisify(fsReadFile);
 export const stat = promisify(fsStat);
 export const writeFile = promisify(fsWriteFile);
+export const mkdir = promisify(fsMkdir);
 
 export function emptyDir(dir: string) {
   if (existsSync(dir)) {

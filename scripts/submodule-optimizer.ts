@@ -1,6 +1,6 @@
 import { build, BuildOptions } from 'esbuild';
-import { BuildConfig, banner, nodeTarget, target, watcher, writeFile, readFile } from './util';
-import { join } from 'path';
+import { BuildConfig, banner, nodeTarget, target, watcher, writeFile, readFile, mkdir } from './util';
+import { dirname, join } from 'path';
 import { minify } from 'terser';
 import { platformArchTriples } from '@napi-rs/triples';
 import { readPackageJson } from './package-json';
@@ -155,6 +155,7 @@ async function generatePlatformBindingsData(config: BuildConfig) {
 
   const code = c.join('\n') + '\n';
 
-  const platformBindingPath = join(config.srcDir, 'optimizer', 'src', 'qwik-binding-map.ts');
+  const platformBindingPath = config.qwikBindingMap!;
+  await mkdir(dirname(platformBindingPath), {recursive: true});
   await writeFile(platformBindingPath, code);
 }
