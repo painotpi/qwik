@@ -70,7 +70,9 @@ export function loadConfig(args: string[] = []) {
   config.srcDir = join(config.rootDir, 'src');
   config.srcNapiDir = join(config.srcDir, 'napi');
   config.scriptsDir = join(config.rootDir, 'scripts');
-  config.distPkgDir = config.bazelOutputDir ? join(join(config.bazelOutputDir, 'package')) : join(config.distDir, '@builder.io-qwik');
+  config.distPkgDir = config.bazelOutputDir
+    ? join(join(config.bazelOutputDir, 'package'))
+    : join(config.distDir, '@builder.io-qwik');
   config.distBindingsDir = join(config.distPkgDir, 'bindings');
   config.tscDir = join(config.distDir, 'tsc-out');
   config.esmNode = parseInt(process.version.substr(1).split('.')[0], 10) >= 14;
@@ -79,7 +81,12 @@ export function loadConfig(args: string[] = []) {
   config.setVersion = (config as any)['set-version'];
   config.setDistTag = (config as any)['set-dist-tag'];
   config.dryRun = (config as any)['dry-run'];
-  config.qwikBindingMap = join(config.bazelOutputDir || config.srcDir, 'optimizer', 'src', 'qwik-binding-map.ts');
+  config.qwikBindingMap = join(
+    config.bazelOutputDir || config.srcDir,
+    'optimizer',
+    'src',
+    'qwik-binding-map.ts'
+  );
 
   return config;
 }
